@@ -277,7 +277,6 @@ ShopTab:CreateToggle({
     end,
 })
 
--- FITUR BARU: BUY ROD (hanya ini yang ditambah, sisanya 100% sama)
 ShopTab:CreateDropdown({
     Name = "Buy rod",
     Options = {"PINKYS ROD", "SAMURAI ROD", "VERINOS ROD", "DESTROYER ROD", "GALAXY ROD", "ENTROPY ROD"},
