@@ -88,8 +88,6 @@ local function startBlati()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
-                local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-                if backpackTool then backpackTool.Parent = player.Character end
                 if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
@@ -141,8 +139,6 @@ local function startForceSecret()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
-                local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-                if backpackTool then backpackTool.Parent = player.Character end
                 if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
