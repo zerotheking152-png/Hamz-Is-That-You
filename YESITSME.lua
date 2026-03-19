@@ -4,8 +4,6 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
-local HttpService = game:GetService("HttpService")
-
 local throwRemote = ReplicatedStorage:WaitForChild("Fishing_RemoteThrow")
 local fishingFolder = ReplicatedStorage:WaitForChild("Fishing")
 local toServer = fishingFolder:WaitForChild("ToServer")
@@ -33,7 +31,6 @@ getgenv().InfiniteJump = false
 getgenv().Noclip = false
 getgenv().WalkSpeedValue = 16
 getgenv().AutoSell = false
-getgenv().SellInterval = 180
 getgenv().SellCount = 10
 local fishCaught = 0
 
@@ -67,6 +64,8 @@ local Window = Rayfield:CreateWindow({
 
 local MainTab = Window:CreateTab("MAIN", 4483362458)
 local PlayerTab = Window:CreateTab("PLAYER", 4483362458)
+
+MainTab:CreateLabel("MANCING MANUAL 1X BARU IDUPIN BLATI")
 
 local blatiLoop
 local function startBlati()
@@ -106,7 +105,6 @@ MainTab:CreateToggle({
     Callback = function(Value)
         getgenv().Blati = Value
         if Value then
-            if not sessionID then sessionID = HttpService:GenerateGUID(false) print("✅ Session ID auto captured: " .. sessionID) end
             startBlati()
             local args = {
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
@@ -158,7 +156,6 @@ MainTab:CreateToggle({
     Callback = function(Value)
         getgenv().ForceSecret = Value
         if Value then
-            if not sessionID then sessionID = HttpService:GenerateGUID(false) print("✅ Session ID auto captured: " .. sessionID) end
             startForceSecret()
             local args = {
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
@@ -240,20 +237,6 @@ PlayerTab:CreateInput({
 })
 
 PlayerTab:CreateInput({
-    Name = "Sell Every (detik)",
-    CurrentValue = "180",
-    PlaceholderText = "180",
-    RemoveTextAfterFocusLost = false,
-    Flag = "SellIntervalFlag",
-    Callback = function(Text)
-        local val = tonumber(Text)
-        if val and val >= 1 then
-            getgenv().SellInterval = val
-        end
-    end,
-})
-
-PlayerTab:CreateInput({
     Name = "Sell Every (ikan)",
     CurrentValue = "10",
     PlaceholderText = "10",
@@ -267,31 +250,12 @@ PlayerTab:CreateInput({
     end,
 })
 
-local autoSellLoop
-local function startAutoSell()
-    if autoSellLoop then return end
-    autoSellLoop = task.spawn(function()
-        while getgenv().AutoSell do
-            if sellRemote then
-                sellRemote:FireServer(1000)
-                fishCaught = 0
-            end
-            task.wait(getgenv().SellInterval)
-        end
-    end)
-end
-
 PlayerTab:CreateToggle({
     Name = "AUTO SELL",
     CurrentValue = false,
     Flag = "AutoSellFlag",
     Callback = function(Value)
         getgenv().AutoSell = Value
-        if Value then
-            startAutoSell()
-        else
-            if autoSellLoop then task.cancel(autoSellLoop) autoSellLoop = nil end
-        end
     end,
 })
 
