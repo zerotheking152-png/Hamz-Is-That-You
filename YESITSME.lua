@@ -31,8 +31,10 @@ getgenv().InfiniteJump = false
 getgenv().Noclip = false
 getgenv().WalkSpeedValue = 16
 getgenv().AutoSell = false
-getgenv().SellCount = 10
+getgenv().SellMode = "Count"
+getgenv().SellValue = 10
 local fishCaught = 0
+local lastSellTime = 0
 
 local humanoid = nil
 local function getHumanoid()
@@ -86,7 +88,7 @@ local function startBlati()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
-                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
                 end
@@ -137,7 +139,7 @@ local function startForceSecret()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
-                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
                 end
@@ -236,118 +238,71 @@ PlayerTab:CreateInput({
     end,
 })
 
-PlayerTab:CreateInput({
+local ShopTab = Window:CreateTab("SHOP", 4483362458)
+
+ShopTab:CreateDropdown({
+    Name = "Select Option",
+    Options = {"Count", "Second"},
+    CurrentOption = {"Count"},
+    MultipleOptions = false,
+    Flag = "SellModeFlag",
+    Callback = function(CurrentOption)
+        getgenv().SellMode = CurrentOption[1]
+    end,
+})
+
+ShopTab:CreateInput({
     Name = "Sell Every (ikan)",
     CurrentValue = "10",
     PlaceholderText = "10",
     RemoveTextAfterFocusLost = false,
-    Flag = "SellCountFlag",
+    Flag = "SellValueFlag",
     Callback = function(Text)
         local val = tonumber(Text)
         if val and val >= 1 then
-            getgenv().SellCount = val
+            getgenv().SellValue = val
         end
     end,
 })
 
-PlayerTab:CreateToggle({
+ShopTab:CreateToggle({
     Name = "AUTO SELL",
     CurrentValue = false,
     Flag = "AutoSellFlag",
     Callback = function(Value)
         getgenv().AutoSell = Value
+        if Value and getgenv().SellMode == "Second" then
+            lastSellTime = tick()
+        end
     end,
 })
 
 local TeleportTab = Window:CreateTab("TELEPORT", 4483362458)
 local teleportSection = TeleportTab:CreateSection("TELEPORT PULAU")
 
-TeleportTab:CreateButton({
-    Name = "Pulau Kinyis",
-    Callback = function()
+TeleportTab:CreateDropdown({
+    Name = "Select Option",
+    Options = {"Pulau Kinyis", "Pulau Raja Ampat", "Pulau Wakatobi", "Pulau Bali", "Pulau natuna", "Pulau Banda"},
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Flag = "TeleportFlag",
+    Callback = function(CurrentOption)
+        local selected = CurrentOption[1]
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
-            hrp.CFrame = CFrame.new(81.8612061, 1006.87341, -818.234985, 0.485841095, -3.1988499e-08, -0.87404716, 9.73005925e-08, 1, 1.74866148e-08, 0.87404716, -9.35410185e-08, 0.485841095)
-            sessionID = nil
-            task.wait(0.5)
-            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if backpackTool then
-                backpackTool.Parent = player.Character
+            if selected == "Pulau Kinyis" then
+                hrp.CFrame = CFrame.new(81.8612061, 1006.87341, -818.234985, 0.485841095, -3.1988499e-08, -0.87404716, 9.73005925e-08, 1, 1.74866148e-08, 0.87404716, -9.35410185e-08, 0.485841095)
+            elseif selected == "Pulau Raja Ampat" then
+                hrp.CFrame = CFrame.new(-1845.45935, 1006.62732, -1579.06555, 0.925677121, -1.99983274e-09, 0.378314495, 9.79888726e-10, 1, 2.88852808e-09, -0.378314495, -2.30313835e-09, 0.925677121)
+            elseif selected == "Pulau Wakatobi" then
+                hrp.CFrame = CFrame.new(-1399.88684, 1021.17017, 1497.85059, -0.327202201, -4.10665884e-08, 0.944954336, 7.90609747e-08, 1, 7.08346519e-08, -0.944954336, 9.78862644e-08, -0.327202201)
+            elseif selected == "Pulau Bali" then
+                hrp.CFrame = CFrame.new(989.347717, 1034.922, 1607.38538, 0.00405485556, 4.51565931e-08, 0.999991775, -1.46329642e-08, 1, -4.50976287e-08, -0.999991775, -1.4449979e-08, 0.00405485556)
+            elseif selected == "Pulau natuna" then
+                hrp.CFrame = CFrame.new(2240.65332, 995.997681, -94.5214081, 0.267383486, 2.81976913e-08, -0.963590205, 1.64388858e-08, 1, 3.38247297e-08, 0.963590205, -2.48845229e-08, 0.267383486)
+            elseif selected == "Pulau Banda" then
+                hrp.CFrame = CFrame.new(-349.488678, 1000.69397, 178.114243, 0.996432185, 6.81453258e-08, 0.0843971372, -6.44756852e-08, 1, -4.6206285e-08, -0.0843971372, 4.05998684e-08, 0.996432185)
             end
-        end
-    end,
-})
-
-TeleportTab:CreateButton({
-    Name = "Pulau Raja Ampat",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-1845.45935, 1006.62732, -1579.06555, 0.925677121, -1.99983274e-09, 0.378314495, 9.79888726e-10, 1, 2.88852808e-09, -0.378314495, -2.30313835e-09, 0.925677121)
-            sessionID = nil
-            task.wait(0.5)
-            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if backpackTool then
-                backpackTool.Parent = player.Character
-            end
-        end
-    end,
-})
-
-TeleportTab:CreateButton({
-    Name = "Pulau Wakatobi",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-1399.88684, 1021.17017, 1497.85059, -0.327202201, -4.10665884e-08, 0.944954336, 7.90609747e-08, 1, 7.08346519e-08, -0.944954336, 9.78862644e-08, -0.327202201)
-            sessionID = nil
-            task.wait(0.5)
-            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if backpackTool then
-                backpackTool.Parent = player.Character
-            end
-        end
-    end,
-})
-
-TeleportTab:CreateButton({
-    Name = "Pulau Bali",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(989.347717, 1034.922, 1607.38538, 0.00405485556, 4.51565931e-08, 0.999991775, -1.46329642e-08, 1, -4.50976287e-08, -0.999991775, -1.4449979e-08, 0.00405485556)
-            sessionID = nil
-            task.wait(0.5)
-            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if backpackTool then
-                backpackTool.Parent = player.Character
-            end
-        end
-    end,
-})
-
-TeleportTab:CreateButton({
-    Name = "Pulau natuna",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(2240.65332, 995.997681, -94.5214081, 0.267383486, 2.81976913e-08, -0.963590205, 1.64388858e-08, 1, 3.38247297e-08, 0.963590205, -2.48845229e-08, 0.267383486)
-            sessionID = nil
-            task.wait(0.5)
-            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if backpackTool then
-                backpackTool.Parent = player.Character
-            end
-        end
-    end,
-})
-
-TeleportTab:CreateButton({
-    Name = "Pulau Banda",
-    Callback = function()
-        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(-349.488678, 1000.69397, 178.114243, 0.996432185, 6.81453258e-08, 0.0843971372, -6.44756852e-08, 1, -4.6206285e-08, -0.0843971372, 4.05998684e-08, 0.996432185)
             sessionID = nil
             task.wait(0.5)
             local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
@@ -384,6 +339,21 @@ local rodEquipLoop = task.spawn(function()
             end
         end
         task.wait(0.5)
+    end
+end)
+
+local autoSellTimerLoop = task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if getgenv().AutoSell and getgenv().SellMode == "Second" then
+            if tick() - lastSellTime >= getgenv().SellValue then
+                if fishCaught > 0 and sellRemote then
+                    sellRemote:FireServer(800)
+                    fishCaught = 0
+                end
+                lastSellTime = tick()
+            end
+        end
     end
 end)
 
