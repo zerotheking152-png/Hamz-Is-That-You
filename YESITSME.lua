@@ -10,18 +10,7 @@ local toServer = fishingFolder:WaitForChild("ToServer")
 local minigameStarted = toServer:WaitForChild("MinigameStarted")
 local reelFinished = toServer:WaitForChild("ReelFinished")
 
-local Remote = {}
-local function waitRS(...)
-    local current = ReplicatedStorage
-    for _, child in ipairs({...}) do
-        current = current:WaitForChild(child, 5)
-        if not current then return nil end
-    end
-    return current
-end
-task.spawn(function()
-    Remote.Sell = waitRS("Shop", "ToServer", "SellFish")
-end)
+local sellRemote = ReplicatedStorage:WaitForChild("Economy"):WaitForChild("ToServer"):WaitForChild("SellUnder")
 
 local sessionID = nil
 local oldNamecall
@@ -41,9 +30,8 @@ getgenv().ForceSecret = false
 getgenv().InfiniteJump = false
 getgenv().Noclip = false
 getgenv().WalkSpeedValue = 16
-_G.AutoSellToggle = false
-_G.SellWeightTarget = 100
-_G.AutoSellDelay = 5
+getgenv().AutoSell = false
+getgenv().SellCount = 10
 local fishCaught = 0
 
 local humanoid = nil
@@ -98,6 +86,10 @@ local function startBlati()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
+                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                    if sellRemote then sellRemote:FireServer(800) end
+                    fishCaught = 0
+                end
                 task.wait(0.00001)
             else
                 task.wait(0.00001)
@@ -145,6 +137,10 @@ local function startForceSecret()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
+                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                    if sellRemote then sellRemote:FireServer(800) end
+                    fishCaught = 0
+                end
                 task.wait(0.00001)
             else
                 task.wait(0.00001)
@@ -226,6 +222,21 @@ PlayerTab:CreateToggle({
 })
 
 PlayerTab:CreateInput({
+    Name = "WalkSpeed",
+    CurrentValue = "16",
+    PlaceholderText = "16",
+    RemoveTextAfterFocusLost = false,
+    Flag = "WalkSpeedFlag",
+    Callback = function(Text)
+        local value = tonumber(Text)
+        if value and humanoid then
+            getgenv().WalkSpeedValue = value
+            humanoid.WalkSpeed = value
+        end
+    end,
+})
+
+PlayerTab:CreateInput({
     Name = "Sell Every (ikan)",
     CurrentValue = "10",
     PlaceholderText = "10",
@@ -234,7 +245,7 @@ PlayerTab:CreateInput({
     Callback = function(Text)
         local val = tonumber(Text)
         if val and val >= 1 then
-            _G.SellWeightTarget = val
+            getgenv().SellCount = val
         end
     end,
 })
@@ -244,7 +255,7 @@ PlayerTab:CreateToggle({
     CurrentValue = false,
     Flag = "AutoSellFlag",
     Callback = function(Value)
-        _G.AutoSellToggle = Value
+        getgenv().AutoSell = Value
     end,
 })
 
@@ -373,21 +384,6 @@ local rodEquipLoop = task.spawn(function()
             end
         end
         task.wait(0.5)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if _G.AutoSellToggle then
-            if Remote.Sell then
-                pcall(function()
-                    Remote.Sell:FireServer({ maxWeight = _G.SellWeightTarget })
-                end)
-            end
-            task.wait(_G.AutoSellDelay)
-        else
-            task.wait(1)
-        end
     end
 end)
 
