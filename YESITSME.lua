@@ -50,24 +50,27 @@ player.CharacterAdded:Connect(function(char)
 end)
 getHumanoid()
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Fluent = loadstring(game:HttpGet("https://github.com/ActualMasterOogway/Fluent-Renewed/releases/latest/download/Fluent.luau"))()
 
-local Window = Rayfield:CreateWindow({
-    Name = "HamzHub",
-    LoadingTitle = "HamzHub Is Loading",
-    LoadingSubtitle = "",
-    ShowText = "HamzHub",
-    Theme = "Default",
-    ToggleUIKeybind = "K",
-    ConfigurationSaving = {
-        Enabled = false,
-    },
+local Window = Fluent:CreateWindow({
+    Title = "HMZ Hub",
+    SubTitle = "",
+    TabWidth = 170,
+    Size = UDim2.fromOffset(600, 480),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-local MainTab = Window:CreateTab("MAIN", 4483362458)
-local PlayerTab = Window:CreateTab("PLAYER", 4483362458)
+local MainTab = Window:AddTab({ Title = "MAIN" })
+local PlayerTab = Window:AddTab({ Title = "PLAYER" })
+local ShopTab = Window:AddTab({ Title = "SHOP" })
+local TeleportTab = Window:AddTab({ Title = "TELEPORT" })
 
-MainTab:CreateLabel("MANCING MANUAL 1X BARU IDUPIN BLATI")
+MainTab:AddParagraph({
+    Title = "MANCING MANUAL 1X BARU IDUPIN BLATI",
+    Content = ""
+})
 
 local blatiLoop
 local function startBlati()
@@ -88,6 +91,8 @@ local function startBlati()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
+                local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
+                if backpackTool then backpackTool.Parent = player.Character end
                 if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
@@ -100,10 +105,9 @@ local function startBlati()
     end)
 end
 
-MainTab:CreateToggle({
-    Name = "BLATI (Instant Fishing)",
-    CurrentValue = false,
-    Flag = "BlatiFlag",
+MainTab:AddToggle({
+    Title = "BLATI (Instant Fishing)",
+    Default = false,
     Callback = function(Value)
         getgenv().Blati = Value
         if Value then
@@ -139,6 +143,8 @@ local function startForceSecret()
                 }
                 reelFinished:FireServer(successArgs, sessionID)
                 fishCaught = fishCaught + 1
+                local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
+                if backpackTool then backpackTool.Parent = player.Character end
                 if getgenv().AutoSell and getgenv().SellMode == "Count" and fishCaught >= getgenv().SellValue then
                     if sellRemote then sellRemote:FireServer(800) end
                     fishCaught = 0
@@ -151,10 +157,9 @@ local function startForceSecret()
     end)
 end
 
-MainTab:CreateToggle({
-    Name = "FORCE SECRET (Instant Fishing Secret)",
-    CurrentValue = false,
-    Flag = "ForceSecretFlag",
+MainTab:AddToggle({
+    Title = "FORCE SECRET (Instant Fishing Secret)",
+    Default = false,
     Callback = function(Value)
         getgenv().ForceSecret = Value
         if Value then
@@ -172,10 +177,9 @@ game:GetService("ReplicatedStorage"):WaitForChild("FishUI"):WaitForChild("ToServ
 })
 
 local jumpConnection
-PlayerTab:CreateToggle({
-    Name = "Infinite Jump",
-    CurrentValue = false,
-    Flag = "InfJumpFlag",
+PlayerTab:AddToggle({
+    Title = "Infinite Jump",
+    Default = false,
     Callback = function(Value)
         getgenv().InfiniteJump = Value
         if Value then
@@ -191,10 +195,9 @@ PlayerTab:CreateToggle({
 })
 
 local noclipConnection
-PlayerTab:CreateToggle({
-    Name = "Noclip",
-    CurrentValue = false,
-    Flag = "NoclipFlag",
+PlayerTab:AddToggle({
+    Title = "Noclip",
+    Default = false,
     Callback = function(Value)
         getgenv().Noclip = Value
         if Value then
@@ -223,12 +226,10 @@ PlayerTab:CreateToggle({
     end,
 })
 
-PlayerTab:CreateInput({
-    Name = "WalkSpeed",
-    CurrentValue = "16",
-    PlaceholderText = "16",
-    RemoveTextAfterFocusLost = false,
-    Flag = "WalkSpeedFlag",
+PlayerTab:AddInput({
+    Title = "WalkSpeed",
+    Default = "16",
+    Placeholder = "16",
     Callback = function(Text)
         local value = tonumber(Text)
         if value and humanoid then
@@ -238,25 +239,21 @@ PlayerTab:CreateInput({
     end,
 })
 
-local ShopTab = Window:CreateTab("SHOP", 4483362458)
+ShopTab:AddSection("AUTO SELL SETTINGS")
 
-ShopTab:CreateDropdown({
-    Name = "Select Option",
+ShopTab:AddDropdown({
+    Title = "Select Option",
     Options = {"Count", "Second"},
-    CurrentOption = {"Count"},
-    MultipleOptions = false,
-    Flag = "SellModeFlag",
-    Callback = function(CurrentOption)
-        getgenv().SellMode = CurrentOption[1]
+    Default = "Count",
+    Callback = function(Value)
+        getgenv().SellMode = Value
     end,
 })
 
-ShopTab:CreateInput({
-    Name = "Sell Every (ikan)",
-    CurrentValue = "10",
-    PlaceholderText = "10",
-    RemoveTextAfterFocusLost = false,
-    Flag = "SellValueFlag",
+ShopTab:AddInput({
+    Title = "Sell Every (ikan)",
+    Default = "10",
+    Placeholder = "10",
     Callback = function(Text)
         local val = tonumber(Text)
         if val and val >= 1 then
@@ -265,10 +262,9 @@ ShopTab:CreateInput({
     end,
 })
 
-ShopTab:CreateToggle({
-    Name = "AUTO SELL",
-    CurrentValue = false,
-    Flag = "AutoSellFlag",
+ShopTab:AddToggle({
+    Title = "AUTO SELL",
+    Default = false,
     Callback = function(Value)
         getgenv().AutoSell = Value
         if Value and getgenv().SellMode == "Second" then
@@ -277,17 +273,14 @@ ShopTab:CreateToggle({
     end,
 })
 
-local TeleportTab = Window:CreateTab("TELEPORT", 4483362458)
-local teleportSection = TeleportTab:CreateSection("TELEPORT PULAU")
+TeleportTab:AddSection("TELEPORT PULAU")
 
-TeleportTab:CreateDropdown({
-    Name = "Select Option",
+TeleportTab:AddDropdown({
+    Title = "Select Option",
     Options = {"Pulau Kinyis", "Pulau Raja Ampat", "Pulau Wakatobi", "Pulau Bali", "Pulau natuna", "Pulau Banda"},
-    CurrentOption = {""},
-    MultipleOptions = false,
-    Flag = "TeleportFlag",
-    Callback = function(CurrentOption)
-        local selected = CurrentOption[1]
+    Default = "",
+    Callback = function(Value)
+        local selected = Value
         local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
         if hrp then
             if selected == "Pulau Kinyis" then
