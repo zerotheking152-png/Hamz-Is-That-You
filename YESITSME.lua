@@ -277,6 +277,22 @@ ShopTab:CreateToggle({
     end,
 })
 
+-- FITUR BARU: BUY ROD (hanya ini yang ditambah, sisanya 100% sama)
+ShopTab:CreateDropdown({
+    Name = "Buy rod",
+    Options = {"PINKYS ROD", "SAMURAI ROD", "VERINOS ROD", "DESTROYER ROD", "GALAXY ROD", "ENTROPY ROD"},
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Flag = "BuyRodFlag",
+    Callback = function(CurrentOption)
+        local selectedRod = CurrentOption[1]
+        if selectedRod and selectedRod \~= "" then
+            local args = {selectedRod}
+            game:GetService("ReplicatedStorage"):WaitForChild("RodShop"):WaitForChild("ToServer"):WaitForChild("PurchaseRod"):FireServer(unpack(args))
+        end
+    end,
+})
+
 local TeleportTab = Window:CreateTab("TELEPORT", 4483362458)
 local teleportSection = TeleportTab:CreateSection("TELEPORT PULAU")
 
