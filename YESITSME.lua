@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
 local throwRemote = ReplicatedStorage:WaitForChild("Fishing_RemoteThrow")
@@ -18,8 +19,12 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     if getnamecallmethod() == "FireServer" and self == throwRemote then
         local args = {...}
         if typeof(args[2]) == "string" and #args[2] > 20 then
-            sessionID = args[2]
-            print("✅ Session ID captured: " .. sessionID)
+            if not sessionID then
+                sessionID = args[2]
+                print("✅ Session ID captured: " .. sessionID)
+            else
+                sessionID = args[2]
+            end
         end
     end
     return oldNamecall(self, ...)
@@ -74,7 +79,8 @@ local function startBlati()
     if blatiLoop then return end
     blatiLoop = task.spawn(function()
         while getgenv().Blati do
-            if sessionID and humanoid then
+            if humanoid then
+                sessionID = HttpService:GenerateGUID(false)
                 throwRemote:FireServer(0, sessionID)
                 task.wait(0.00001)
                 minigameStarted:FireServer(sessionID)
@@ -125,7 +131,8 @@ local function startForceSecret()
     if forceSecretLoop then return end
     forceSecretLoop = task.spawn(function()
         while getgenv().ForceSecret do
-            if sessionID and humanoid then
+            if humanoid then
+                sessionID = HttpService:GenerateGUID(false)
                 throwRemote:FireServer(0, sessionID)
                 task.wait(0.00001)
                 minigameStarted:FireServer(sessionID)
