@@ -1,23 +1,17 @@
--- HAMZHUB AUTO FISH + BLATI GUI (2026) - SUPER CEPET + GUI KEREN VERSION
--- Execute pake executor lo (Fluxus/Delta/Wave/Solara dll)
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
--- === REMOTES ===
 local throwRemote = ReplicatedStorage:WaitForChild("Fishing_RemoteThrow")
 local fishingFolder = ReplicatedStorage:WaitForChild("Fishing")
 local toServer = fishingFolder:WaitForChild("ToServer")
 local minigameStarted = toServer:WaitForChild("MinigameStarted")
 local reelFinished = toServer:WaitForChild("ReelFinished")
 
--- === SELL REMOTE (dari spy lo) ===
 local sellRemote = ReplicatedStorage:WaitForChild("Economy"):WaitForChild("ToServer"):WaitForChild("SellUnder")
 
--- === SESSION ID HOOK ===
 local sessionID = nil
 local oldNamecall
 oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
@@ -31,16 +25,16 @@ oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
     return oldNamecall(self, ...)
 end))
 
--- === FLAGS ===
 getgenv().Blati = false
 getgenv().ForceSecret = false
 getgenv().InfiniteJump = false
 getgenv().Noclip = false
 getgenv().WalkSpeedValue = 16
 getgenv().AutoSell = false
-getgenv().SellInterval = 180  -- default 3 menit (bisa diubah lewat box)
+getgenv().SellInterval = 180
+getgenv().SellCount = 10
+local fishCaught = 0
 
--- === CHARACTER SETUP ===
 local humanoid = nil
 local function getHumanoid()
     if player.Character and player.Character:FindFirstChild("Humanoid") then
@@ -55,7 +49,6 @@ player.CharacterAdded:Connect(function(char)
 end)
 getHumanoid()
 
--- === RAYFIELD GUI ===
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
@@ -73,7 +66,6 @@ local Window = Rayfield:CreateWindow({
 local MainTab = Window:CreateTab("MAIN", 4483362458)
 local PlayerTab = Window:CreateTab("PLAYER", 4483362458)
 
--- === BLATI (Instant Fishing SUPER CEPET + SECRET) ===
 local blatiLoop
 local function startBlati()
     if blatiLoop then return end
@@ -92,6 +84,11 @@ local function startBlati()
                     ["isSecret"] = true
                 }
                 reelFinished:FireServer(successArgs, sessionID)
+                fishCaught = fishCaught + 1
+                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                    if sellRemote then sellRemote:FireServer(1000) end
+                    fishCaught = 0
+                end
                 task.wait(0.00001)
             else
                 task.wait(0.00001)
@@ -112,13 +109,14 @@ MainTab:CreateToggle({
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
 }
 game:GetService("ReplicatedStorage"):WaitForChild("FishUI"):WaitForChild("ToServer"):WaitForChild("ToggleFavorite"):FireServer(unpack(args))
+            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
+            if backpackTool then backpackTool.Parent = player.Character end
         else
             if blatiLoop then task.cancel(blatiLoop) blatiLoop = nil end
         end
     end,
 })
 
--- === FORCE SECRET (Instant Fishing Secret) ===
 local forceSecretLoop
 local function startForceSecret()
     if forceSecretLoop then return end
@@ -137,6 +135,11 @@ local function startForceSecret()
                     ["isSecret"] = true
                 }
                 reelFinished:FireServer(successArgs, sessionID)
+                fishCaught = fishCaught + 1
+                if getgenv().AutoSell and fishCaught >= getgenv().SellCount then
+                    if sellRemote then sellRemote:FireServer(1000) end
+                    fishCaught = 0
+                end
                 task.wait(0.00001)
             else
                 task.wait(0.00001)
@@ -157,13 +160,14 @@ MainTab:CreateToggle({
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
 }
 game:GetService("ReplicatedStorage"):WaitForChild("FishUI"):WaitForChild("ToServer"):WaitForChild("ToggleFavorite"):FireServer(unpack(args))
+            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
+            if backpackTool then backpackTool.Parent = player.Character end
         else
             if forceSecretLoop then task.cancel(forceSecretLoop) forceSecretLoop = nil end
         end
     end,
 })
 
--- === PLAYER TAB ELEMENTS ===
 local jumpConnection
 PlayerTab:CreateToggle({
     Name = "Infinite Jump",
@@ -174,11 +178,11 @@ PlayerTab:CreateToggle({
         if Value then
             if not jumpConnection then
                 jumpConnection = UserInputService.JumpRequest:Connect(function()
-                    if getgenv().InfiniteJump and humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    end
+                    if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
                 end)
             end
+        else
+            if jumpConnection then jumpConnection:Disconnect() jumpConnection = nil end
         end
     end,
 })
@@ -232,15 +236,29 @@ PlayerTab:CreateInput({
 })
 
 PlayerTab:CreateInput({
-    Name = "Sell Every (min)",
-    CurrentValue = "3",
-    PlaceholderText = "3",
+    Name = "Sell Every (detik)",
+    CurrentValue = "180",
+    PlaceholderText = "180",
     RemoveTextAfterFocusLost = false,
     Flag = "SellIntervalFlag",
     Callback = function(Text)
         local val = tonumber(Text)
-        if val and val >= 1 and val <= 200 then
-            getgenv().SellInterval = val * 60
+        if val and val >= 1 then
+            getgenv().SellInterval = val
+        end
+    end,
+})
+
+PlayerTab:CreateInput({
+    Name = "Sell Every (ikan)",
+    CurrentValue = "10",
+    PlaceholderText = "10",
+    RemoveTextAfterFocusLost = false,
+    Flag = "SellCountFlag",
+    Callback = function(Text)
+        local val = tonumber(Text)
+        if val and val >= 1 then
+            getgenv().SellCount = val
         end
     end,
 })
@@ -252,6 +270,7 @@ local function startAutoSell()
         while getgenv().AutoSell do
             if sellRemote then
                 sellRemote:FireServer(1000)
+                fishCaught = 0
             end
             task.wait(getgenv().SellInterval)
         end
@@ -272,7 +291,6 @@ PlayerTab:CreateToggle({
     end,
 })
 
--- === TELEPORT MENU SENDIRI (tab baru, bukan di player) ===
 local TeleportTab = Window:CreateTab("TELEPORT", 4483362458)
 local teleportSection = TeleportTab:CreateSection("TELEPORT PULAU")
 
@@ -356,7 +374,22 @@ TeleportTab:CreateButton({
     end,
 })
 
--- Auto update walkspeed kalau character respawn
+TeleportTab:CreateButton({
+    Name = "Pulau Banda",
+    Callback = function()
+        local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(-349.488678, 1000.69397, 178.114243, 0.996432185, 6.81453258e-08, 0.0843971372, -6.44756852e-08, 1, -4.6206285e-08, -0.0843971372, 4.05998684e-08, 0.996432185)
+            sessionID = nil
+            task.wait(0.5)
+            local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
+            if backpackTool then
+                backpackTool.Parent = player.Character
+            end
+        end
+    end,
+})
+
 player.CharacterAdded:Connect(function()
     task.wait(1)
     if humanoid then
@@ -364,7 +397,6 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
--- === ANTI AFK ===
 local VirtualUser = game:GetService("VirtualUser")
 Players.LocalPlayer.Idled:Connect(function()
     VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
@@ -372,10 +404,9 @@ Players.LocalPlayer.Idled:Connect(function()
     VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 end)
 
--- === ROD EQUIP FIX (biar rod tetep kepake setelah AFK lama) ===
 local rodEquipLoop = task.spawn(function()
     while true do
-        if getgenv().Blati and player.Character then
+        if (getgenv().Blati or getgenv().ForceSecret) and player.Character then
             local toolInHand = player.Character:FindFirstChildOfClass("Tool")
             if not toolInHand then
                 local backpackTool = player.Backpack:FindFirstChildOfClass("Tool")
@@ -384,7 +415,7 @@ local rodEquipLoop = task.spawn(function()
                 end
             end
         end
-        task.wait(10)
+        task.wait(0.5)
     end
 end)
 
