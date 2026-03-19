@@ -4,6 +4,8 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
+local HttpService = game:GetService("HttpService")
+
 local throwRemote = ReplicatedStorage:WaitForChild("Fishing_RemoteThrow")
 local fishingFolder = ReplicatedStorage:WaitForChild("Fishing")
 local toServer = fishingFolder:WaitForChild("ToServer")
@@ -104,6 +106,7 @@ MainTab:CreateToggle({
     Callback = function(Value)
         getgenv().Blati = Value
         if Value then
+            if not sessionID then sessionID = HttpService:GenerateGUID(false) print("✅ Session ID auto captured: " .. sessionID) end
             startBlati()
             local args = {
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
@@ -155,6 +158,7 @@ MainTab:CreateToggle({
     Callback = function(Value)
         getgenv().ForceSecret = Value
         if Value then
+            if not sessionID then sessionID = HttpService:GenerateGUID(false) print("✅ Session ID auto captured: " .. sessionID) end
             startForceSecret()
             local args = {
 	"bd4238ec-6bbc-4523-8c63-a17356e1f130"
